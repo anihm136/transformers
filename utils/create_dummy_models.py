@@ -432,19 +432,29 @@ def get_tiny_config(config_class, model_class=None, **model_tester_kwargs):
     model_tester = model_tester_class(parent=None, **model_tester_kwargs)
 
     if hasattr(model_tester, "get_pipeline_config"):
-        return model_tester.get_pipeline_config()
+        config = model_tester.get_pipeline_config()
     elif hasattr(model_tester, "prepare_config_and_inputs"):
         # `PoolFormer` has no `get_config` defined. Furthermore, it's better to use `prepare_config_and_inputs` even if
         # `get_config` is defined, since there might be some extra changes in `prepare_config_and_inputs`.
-        return model_tester.prepare_config_and_inputs()[0]
+        config = model_tester.prepare_config_and_inputs()[0]
     elif hasattr(model_tester, "get_config"):
-        return model_tester.get_config()
+        config = model_tester.get_config()
     else:
         error = (
             f"Tiny config not created for {model_type} - the model tester {model_tester_class.__name__} lacks"
             " necessary method to create config."
         )
         raise ValueError(error)
+
+    # make sure this is long enough (some model tester has `20` for this attr.) to pass `text-generation`
+    # pipeline tests.
+    if getattr(config, "max_position_embeddings", 0) > 0:
+        config.max_position_embeddings = max(200, config.max_position_embeddings)
+    if getattr(config, "text_config", None) is not None:
+        if getattr(config.text_config, "max_position_embeddings", None) is not None:
+            config.text_config.max_position_embeddings = max(200, config.text_config.max_position_embeddings)
+
+    return config
 
 
 def convert_tokenizer(tokenizer_fast: PreTrainedTokenizerFast):
