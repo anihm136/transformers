@@ -6848,7 +6848,7 @@
         "model_classes": [
             "WhisperForCausalLM"
         ],
-        "sha": "cd4fb630169682c165be974061bf6aa1b9f1cca5"
+        "sha": "9228810ee8df0072b0f625eaef005d7b2aa826a3"
     },
     "WhisperForConditionalGeneration": {
         "tokenizer_classes": [
