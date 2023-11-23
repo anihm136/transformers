@@ -458,10 +458,10 @@ def get_tiny_config(config_class, model_class=None, **model_tester_kwargs):
     max_position = max(200, min(max_positions))
     for key in ["max_position_embeddings", "max_source_positions", "max_target_positions"]:
         if getattr(config, key, 0) > 0:
-            config.max_position_embeddings = max_position
+            setattr(config, key, max_position)
         if getattr(config, "text_config", None) is not None:
-            if getattr(config.text_config, "max_position_embeddings", None) is not None:
-                config.text_config.max_position_embeddings = max_position
+            if getattr(config.text_config, key, None) is not None:
+                setattr(config.text_config, key, max_position)
 
     return config
 
