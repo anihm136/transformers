@@ -448,11 +448,20 @@ def get_tiny_config(config_class, model_class=None, **model_tester_kwargs):
 
     # make sure this is long enough (some model tester has `20` for this attr.) to pass `text-generation`
     # pipeline tests.
-    if getattr(config, "max_position_embeddings", 0) > 0:
-        config.max_position_embeddings = max(200, config.max_position_embeddings)
-    if getattr(config, "text_config", None) is not None:
-        if getattr(config.text_config, "max_position_embeddings", None) is not None:
-            config.text_config.max_position_embeddings = max(200, config.text_config.max_position_embeddings)
+    max_positions = []
+    for key in ["max_position_embeddings", "max_source_positions", "max_target_positions"]:
+        if getattr(config, key, 0) > 0:
+            max_positions.append(getattr(config, key))
+        if getattr(config, "text_config", None) is not None:
+            if getattr(config.text_config, key, None) is not None:
+                max_positions.append(getattr(config.text_config, key))
+    max_position = max(200, min(max_positions))
+    for key in ["max_position_embeddings", "max_source_positions", "max_target_positions"]:
+        if getattr(config, key, 0) > 0:
+            config.max_position_embeddings = max_position
+        if getattr(config, "text_config", None) is not None:
+            if getattr(config.text_config, "max_position_embeddings", None) is not None:
+                config.text_config.max_position_embeddings = max_position
 
     return config
 
